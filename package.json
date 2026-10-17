@@ -1,0 +1,13 @@
+{
+  "name": "excel-a-project",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Conversor local de Excel a XML de Microsoft Project, con validación y Gantt",
+  "license": "MIT",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test",
+    "build": "node scripts/build.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Convierte Excel a XML de Microsoft Project. Valida tareas y visualiza tu Gantt con procesamiento local.">
+  <title>Excel a Project · Conversor de cronogramas</title>
+  <link rel="stylesheet" href="./src/style.css">
+  <script defer src="./vendor/exceljs.min.js"></script>
+  <script type="module" src="./src/app.mjs"></script>
+</head>
+<body>
+<header class="topbar"><a href="#" class="brand" aria-label="Inicio"><span class="brand-icon">E<span>↗</span>P</span><strong>Excel a Project</strong><span class="version">v0.1</span></a><span class="local"><i></i> Procesamiento en tu equipo</span></header>
+<main>
+  <section class="hero"><div><p class="eyebrow">HERRAMIENTAS PARA PLANIFICACIÓN</p><h1>De Excel a Project,<br><span>con un cronograma revisado.</span></h1><p class="intro">Carga tu hoja, revisa las tareas y descarga un XML para abrir en Microsoft Project. La conversión funciona sin instalar Project.</p></div><div class="hero-aside"><span class="file-chip">XLSX</span><span class="flow-line">→</span><span class="file-chip dark">XML</span><p>Tu archivo se procesa en este navegador.<br>Sin cuentas ni carga a un servidor.</p></div></section>
+  <nav class="steps" aria-label="Proceso"><span><b>01</b> Carga el Excel</span><span><b>02</b> Revisa el cronograma</span><span><b>03</b> Exporta a Project</span></nav>
+  <div class="workspace">
+    <aside class="settings">
+      <section class="panel"><h2>Archivo de origen</h2><label class="dropzone" id="dropzone" for="file"><span class="upload-symbol" aria-hidden="true">↥</span><strong>Seleccionar Excel</strong><span>o arrástralo aquí</span><small>.xlsx · hasta 10 MB · 2000 tareas</small><input id="file" type="file" accept=".xlsx" aria-label="Seleccionar archivo Excel"></label><p id="file-name" class="filename">Ningún archivo seleccionado</p><div class="small-actions"><button id="template" class="text-button">↓ Plantilla Excel</button><button id="demo" class="text-button">Probar ejemplo</button></div><div id="sheet-field" hidden><label for="sheet">Hoja del libro</label><select id="sheet"></select></div></section>
+      <section class="panel"><h2>Configuración</h2><label for="title">Nombre del proyecto</label><input id="title" value="Mi cronograma" maxlength="200"><label for="days">Días de trabajo</label><select id="days"><option value="5">Lunes a viernes</option><option value="6">Lunes a sábado</option><option value="7">Todos los días</option></select><p class="hint">Jornada de 8 horas: 08:00–12:00 y 13:00–17:00. Sin feriados configurados.</p></section>
+      <section class="help"><h3>Prepara tus columnas</h3><p><strong>ID, Nombre e Inicio</strong>, más <strong>Duración (días)</strong> o <strong>Fin</strong>. Agrega Nivel para organizar fases.</p><p>Vínculos: <code>20FC</code>, <code>30CC+1d</code>. Separa varias predecesoras con <code>;</code>.</p><button id="guide-open" class="text-button">Ver guía de uso ↗</button></section>
+    </aside>
+    <section class="results" aria-label="Vista previa del cronograma">
+      <div class="result-heading"><div><p class="eyebrow">VISTA PREVIA</p><h2 id="preview-title">Tu cronograma aparecerá aquí</h2></div><button id="export" class="primary" disabled>Descargar XML <span>↓</span></button></div>
+      <p id="status" role="status" aria-live="polite" class="status">Empieza con tu Excel o prueba el ejemplo de un estudio eléctrico.</p>
+      <div class="metrics" id="metrics" hidden></div>
+      <section id="validation" class="validation" hidden aria-label="Resultado de validación"></section>
+      <label id="ack-label" class="ack" hidden><input id="ack" type="checkbox"> He revisado los avisos y quiero exportar estas fechas de referencia.</label>
+      <div class="preview-panel"><div class="preview-toolbar"><div class="tabs" role="tablist" aria-label="Vista"><button role="tab" id="table-tab" aria-controls="table-view" aria-selected="true">Tareas</button><button role="tab" id="gantt-tab" aria-controls="gantt-view" aria-selected="false">Gantt</button></div><span id="range" class="range">Sin datos</span></div><div id="empty" class="empty"><div class="empty-chart" aria-hidden="true"><i></i><i></i><i></i><i></i></div><h3>Del listado de tareas al plan de trabajo</h3><p>La revisión muestra errores antes de crear el XML.<br>El ejemplo permite explorar todo el flujo.</p><button id="demo-empty" class="secondary">Cargar ejemplo</button></div><div id="table-view" role="tabpanel" aria-labelledby="table-tab" class="table-scroll" hidden></div><div id="gantt-view" role="tabpanel" aria-labelledby="gantt-tab" class="gantt-scroll" hidden></div></div>
+      <p class="export-note">El XML usa programación automática con inicio «no antes de» las fechas del Excel. Project puede recalcular fechas por dependencias y calendario. El Gantt muestra las fechas de referencia; no calcula ruta crítica.</p>
+    </section>
+  </div>
+  <footer><span>Hecho para compartir mejores cronogramas.</span><span>XML de intercambio MSPDI · Código abierto MIT</span></footer>
+</main>
+<dialog id="guide"><button id="guide-close" class="dialog-close" aria-label="Cerrar guía">×</button><p class="eyebrow">GUÍA RÁPIDA</p><h2>De la plantilla al cronograma</h2><ol><li>Descarga la plantilla y sustituye las tareas de ejemplo. Conserva los encabezados en la primera fila.</li><li>Usa IDs positivos únicos. El Nivel empieza en 1; las filas siguientes con nivel superior pertenecen al resumen anterior. Deja fechas y duración vacías en los resúmenes.</li><li>Escribe fechas reales de Excel, AAAA-MM-DD o DD/MM/AAAA. La hora es opcional. Inicio sin hora usa 08:00 y Fin sin hora usa 17:00.</li><li>La duración se mide en días de 8 horas. Duración 0 crea un hito. Los fines se calculan con el calendario elegido.</li><li>Predecesoras admite FC/FS, CC/SS, FF y CF/SF; desfases como +1d o -2h. Los IDs se refieren a la columna ID, no al número de fila.</li><li>Revisa los errores y avisos y descarga el XML. En Microsoft Project de escritorio, usa Archivo → Abrir, selecciona el XML y ábrelo como proyecto nuevo.</li></ol><h3>Qué conserva esta versión</h3><p>Tareas, jerarquía, duración, hitos, dependencias, contacto responsable, notas y avance físico. Los IDs originales del Excel se conservan en Notas. Los identificadores del XML y los vínculos se remapean a números consecutivos.</p><p>El responsable se exporta como Contacto, sin asignación de recursos ni cálculo de costos. El avance físico no crea fechas reales. Esta versión no importa MPP, líneas base, calendarios por recurso, feriados, macros ni fórmulas sin resultado guardado.</p><p>Crear el XML no requiere Project. Para abrirlo y guardarlo como MPP necesitas una aplicación compatible con ese formato.</p></dialog>
+</body></html>

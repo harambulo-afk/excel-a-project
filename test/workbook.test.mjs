@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { readWorkbook,sheetMatrix,inspectZip } from '../src/workbook.mjs';
+import { analyze } from '../src/core.mjs';
+import fs from 'node:fs/promises';
+const require=createRequire(import.meta.url),ExcelJS=require('../vendor/exceljs.min.js');
+test('actual Excel template is readable and valid',async()=>{const bytes=await fs.readFile(new URL('../public/Plantilla_Excel_a_Project.xlsx',import.meta.url));const wb=await readWorkbook(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),ExcelJS);const {matrix}=sheetMatrix(wb.getWorksheet('Tareas'));const r=analyze(matrix);assert.equal(r.tasks.length,10);assert.deepEqual(r.issues,[]);});
+test('cached formulas warn and uncached formulas fail',()=>{const wb=new ExcelJS.Workbook(),s=wb.addWorksheet('Tareas');s.getCell('A1').value={formula:'1+1',result:2};assert.equal(sheetMatrix(s).warnings.length,1);s.getCell('A2').value={formula:'1+1'};assert.throws(()=>sheetMatrix(s),/no tiene resultado/);});
+test('cell errors never become text or zero',()=>{const wb=new ExcelJS.Workbook(),s=wb.addWorksheet('Tareas');s.getCell('A1').value={error:'#VALUE!'};assert.throws(()=>sheetMatrix(s));});
+test('malformed XLSX rejected before decompression',()=>{assert.throws(()=>inspectZip(new ArrayBuffer(30)));});
+test('dates and formatted percentages read consistently',()=>{const wb=new ExcelJS.Workbook(),s=wb.addWorksheet('Tareas');s.getCell('A1').value=new Date('2026-11-02T00:00:00Z');s.getCell('B1').value=.5;s.getCell('B1').numFmt='0%';const r=sheetMatrix(s);assert.ok(r.matrix[0][0] instanceof Date);assert.equal(r.matrix[0][1],50);});
